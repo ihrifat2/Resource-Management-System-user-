@@ -1,6 +1,36 @@
 <?php
+require 'dbconnect.php';
+session_start();
 require 'helper.php';
-$string = "My milkshake brings all the boys to the yard";
+require 'sqlhelper.php';
+
+$today = date("Y-m-d");
+$uid = $_SESSION['user_id'];
+$cid = $_GET['courseid'];
+
+// getting course title from course id
+$cnameQuery     = "SELECT `course_title` FROM `tbl_course` WHERE `course_id` = '$cid'";
+$cnameResult    = $dbconnect->query($cnameQuery);
+$cnameRow       = $cnameResult->fetch_array(MYSQLI_ASSOC);
+$cname          = $cnameRow['course_title'];
+
+// getting enroll id from enroll course id and enroll user id 
+$findRegCourseQuery     = "SELECT `enroll_id` FROM `tbl_enrollinfo` WHERE `enroll_cid` = '$cid' AND `enroll_uid` = '$uid'";
+$findRegCourseResult    = $dbconnect->query($findRegCourseQuery);
+$findRegCourseRow       = $findRegCourseResult->fetch_array(MYSQLI_ASSOC);
+$uid = $findRegCourseRow['enroll_id'];
+$courseDetailsData = array();
+//if student is registered to the course then store all activity from DB
+if ($uid) {
+    $courseDetailsQuery = "SELECT * FROM `tbl_post` WHERE `post_cid` = '$cid' ORDER BY `post_id` DESC";
+    $courseDetailsResult = $dbconnect->query($courseDetailsQuery);
+    if ($courseDetailsResult) {
+        while ($courseDetailsRows = $courseDetailsResult->fetch_array(MYSQLI_ASSOC)) {
+            $courseDetailsData[] = $courseDetailsRows;
+        }
+        $courseDetailsResult->close();
+    }
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -20,23 +50,27 @@ $string = "My milkshake brings all the boys to the yard";
     <!-- Navbar End -->
 
     <div class="container">
-        <div class="row mt-3">
-            <div class="col-md-5" style="position: relative; border: 1px solid black;">
-                <h1 class="text-center" style="position: absolute; top: 0; bottom: 0; left: 0; right: 0; width: 50%; height: 30%; margin: auto;">
+        <div class="row mt-3 mb-4">
+            <div class="col-md-5" style="border: 2px solid black;">
+                <h1 class="text-center">
                     <?php 
-                        echo getFirstWord($string);
+                        echo getFirstWord($cname);
                     ?>
                 </h1>
             </div>
             <div class="col-md-7">
-                <h3 class="my-3">Course Description</h3>
-                <p class="text-justify">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam viverra euismod odio, gravida pellentesque urna varius vitae. Sed dui lorem, adipiscing in adipiscing et, interdum nec metus. Mauris ultricies, justo eu convallis placerat, felis enim.</p>
             </div>
         </div>
 
         <h3 class="my-4">Course Activity</h3>
 
         <!--- \\\\\\\Post-->
+        <?php
+        //if course activity found
+        if (count($courseDetailsData) > 1) {
+            //print all the course activity
+            foreach ($courseDetailsData as $courseDetailsRow) {
+        ?>
         <div class="card gedf-card">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
@@ -45,141 +79,42 @@ $string = "My milkshake brings all the boys to the yard";
                             <img class="rounded-circle" width="45" src="https://picsum.photos/50/50" alt="">
                         </div>
                         <div class="ml-2">
-                            <div class="h5 m-0">Miracles Lee Cross</div>
-                        </div>
-                    </div>
-                    <div class="activity">
-                        <div class="dropdown">
-                            <button class="btn btn-link dropdown-toggle" type="button" id="gedf-drop1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fa fa-ellipsis-h"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="gedf-drop1">
-                                <div class="h6 dropdown-header">Configuration</div>
-                                <a class="dropdown-item" href="#">Save</a>
-                                <a class="dropdown-item" href="#">Hide</a>
-                                <a class="dropdown-item" href="#">Report</a>
-                            </div>
+                            <div class="h5 m-0">@<?php echo getFacultyUsername($courseDetailsRow["post_fid"]); ?></div>
+                            <div class="h7 text-muted"><?php echo getFacultyFullname($courseDetailsRow["post_fid"]); ?></div>
                         </div>
                     </div>
                 </div>
-
             </div>
             <div class="card-body">
-                <div class="text-muted h7 mb-2"> <i class="fa fa-clock-o"></i>10 min ago</div>
-                <a class="card-link" href="#">
-                    <h5 class="card-title">Lorem ipsum dolor sit amet, consectetur adip.</h5>
-                </a>
-
+                <div class="text-muted h7 mb-2">
+                    <i class="fa fa-clock-o"></i>
+                    <?php echo momentAgo($courseDetailsRow["post_create"], $today); ?>
+                </div>
                 <p class="card-text">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Quo recusandae nulla rem eos ipsa praesentium esse magnam nemo dolor
-                    sequi fuga quia quaerat cum, obcaecati hic, molestias minima iste voluptates.
+                    <?php echo $courseDetailsRow["post_text"]; ?>
+                    <br>
+                    Download file from 
+                    <a href="download.php?filename=<?php echo $courseDetailsRow["post_file"]; ?>" target="_blank">here</a>
                 </p>
-            </div>
-            <div class="card-footer">
-                <a href="#" class="card-link"><i class="fa fa-gittip"></i> Like</a>
-                <a href="#" class="card-link"><i class="fa fa-comment"></i> Comment</a>
             </div>
         </div>
         <hr>
-        <!-- Post /////-->
-
-
-        <!--- \\\\\\\Post-->
+        <?php
+            }
+        } else {
+        ?>
         <div class="card gedf-card">
             <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="mr-2">
-                            <img class="rounded-circle" width="45" src="https://picsum.photos/50/50" alt="">
-                        </div>
-                        <div class="ml-2">
-                            <div class="h5 m-0">Miracles Lee Cross</div>
-                        </div>
-                    </div>
-                    <div class="activity">
-                        <div class="dropdown">
-                            <button class="btn btn-link dropdown-toggle" type="button" id="gedf-drop1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fa fa-ellipsis-h"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="gedf-drop1">
-                                <div class="h6 dropdown-header">Configuration</div>
-                                <a class="dropdown-item" href="#">Save</a>
-                                <a class="dropdown-item" href="#">Hide</a>
-                                <a class="dropdown-item" href="#">Report</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-            <div class="card-body">
-                <div class="text-muted h7 mb-2"> <i class="fa fa-clock-o"></i>10 min ago</div>
-                <a class="card-link" href="#">
-                    <h5 class="card-title">Lorem ipsum dolor sit amet, consectetur adip.</h5>
-                </a>
-
-                <p class="card-text">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Quo recusandae nulla rem eos ipsa praesentium esse magnam nemo dolor
-                    sequi fuga quia quaerat cum, obcaecati hic, molestias minima iste voluptates.
-                </p>
-            </div>
-            <div class="card-footer">
-                <a href="#" class="card-link"><i class="fa fa-gittip"></i> Like</a>
-                <a href="#" class="card-link"><i class="fa fa-comment"></i> Comment</a>
+                <p>No Activity Found.</p>
             </div>
         </div>
-        <hr>
-        <!-- Post /////-->
-
-        <!--- \\\\\\\Post-->
-        <div class="card gedf-card">
-            <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="mr-2">
-                            <img class="rounded-circle" width="45" src="https://picsum.photos/50/50" alt="">
-                        </div>
-                        <div class="ml-2">
-                            <div class="h5 m-0">Miracles Lee Cross</div>
-                        </div>
-                    </div>
-                    <div class="activity">
-                        <div class="dropdown">
-                            <button class="btn btn-link dropdown-toggle" type="button" id="gedf-drop1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fa fa-ellipsis-h"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="gedf-drop1">
-                                <div class="h6 dropdown-header">Configuration</div>
-                                <a class="dropdown-item" href="#">Save</a>
-                                <a class="dropdown-item" href="#">Hide</a>
-                                <a class="dropdown-item" href="#">Report</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-            <div class="card-body">
-                <div class="text-muted h7 mb-2"> <i class="fa fa-clock-o"></i>10 min ago</div>
-                <a class="card-link" href="#">
-                    <h5 class="card-title">Lorem ipsum dolor sit amet, consectetur adip.</h5>
-                </a>
-
-                <p class="card-text">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Quo recusandae nulla rem eos ipsa praesentium esse magnam nemo dolor
-                    sequi fuga quia quaerat cum, obcaecati hic, molestias minima iste voluptates.
-                </p>
-            </div>
-            <div class="card-footer">
-                <a href="#" class="card-link"><i class="fa fa-gittip"></i> Like</a>
-                <a href="#" class="card-link"><i class="fa fa-comment"></i> Comment</a>
-            </div>
-        </div>
-        <hr>
+        <?php
+        }
+        ?>
         <!-- Post /////-->
 
         <!-- Pagination -->
-        <ul class="pagination justify-content-center">
+        <!-- <ul class="pagination justify-content-center">
             <li class="page-item">
                 <a class="page-link" href="#" aria-label="Previous">
                     <span aria-hidden="true">&laquo;</span>
@@ -201,7 +136,7 @@ $string = "My milkshake brings all the boys to the yard";
                     <span class="sr-only">Next</span>
                 </a>
             </li>
-        </ul>
+        </ul> -->
     </div>
 
     <script>

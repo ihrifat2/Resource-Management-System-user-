@@ -1,9 +1,13 @@
 <?php
+//Database Connection
 require 'dbconnect.php';
+//Start Session
 session_start();
-if(isset($_SESSION["sdt_id"]) && isset($_SESSION["sdt_name"]) && isset($_SESSION["sdt_role"])){
+//Check user Authentication
+if(isset($_SESSION["user_id"]) && isset($_SESSION["user_name"]) && isset($_SESSION["user_role"])){
     header("Location: index.php");
 }
+//validate user input
 function validate_input($data) {
     $data = trim($data);
     $data = stripslashes($data);
@@ -52,9 +56,11 @@ function validate_input($data) {
 </html>
 <?php
 if (isset($_POST['login_btn'])) {
+    //Taking input
     $login_email    = validate_input($_POST['login_email']);
     $login_passwd   = validate_input($_POST['login_passwd']);
 
+    //Check any of the input field is empty
     if (empty($login_email) || empty($login_passwd)) {
         $notificationItemArray = array(
             'title'=>'Error!',
@@ -62,19 +68,23 @@ if (isset($_POST['login_btn'])) {
             'type'=>'error',
         );
     } else {
+        //filter email
         if (filter_var($login_email, FILTER_VALIDATE_EMAIL)) {
-            $sqlQuery       = "SELECT * FROM `tbl_sdtinfo` WHERE `sdtinfo_email` = '$login_email'";
+            // get information 
+            $sqlQuery       = "SELECT * FROM `tbl_userinfo` WHERE `userinfo_email` = '$login_email'";
             $result         = mysqli_query($dbconnect, $sqlQuery);
             $rows           = mysqli_fetch_array($result);
-            $store_password = $rows['sdtinfo_passwd'];
-            $sdtinfo_id     = $rows['sdtinfo_id'];
-            $sdtinfo_unam   = $rows['sdtinfo_uname'];
-            $sdtinfo_role   = $rows['sdtinfo_role'];
+            $store_password = $rows['userinfo_passwd'];
+            $userinfo_id    = $rows['userinfo_id'];
+            $userinfo_uname = $rows['userinfo_uname'];
+            $userinfo_role  = $rows['userinfo_role'];
+            //check password in matched
             $check          = password_verify($login_passwd, $store_password);
             if ($check) {
-                $_SESSION['sdt_id']    = $sdtinfo_id;
-                $_SESSION['sdt_name']  = $sdtinfo_unam;
-                $_SESSION['sdt_role']  = $sdtinfo_role;
+                //store info to the session for authentication
+                $_SESSION['user_id']    = $userinfo_id;
+                $_SESSION['user_name']  = $userinfo_uname;
+                $_SESSION['user_role']  = $userinfo_role;
                 echo "<script>javascript:document.location='index.php'</script>";
             } else {
                 $notificationItemArray = array(
@@ -91,6 +101,7 @@ if (isset($_POST['login_btn'])) {
             );
         }
     }
+    //storing notification to session
     if(!empty($_SESSION["notification_item"])) {
         if(in_array($RMSNotification["notification"],array_keys($_SESSION["notification_item"]))) {
             foreach($_SESSION["notification_item"] as $k => $v) {
@@ -108,5 +119,6 @@ if (isset($_POST['login_btn'])) {
         $_SESSION["notification_item"] = $notificationItemArray;
     }
 }
+//show notification from session
 include 'inc/notification.php';
 ?>

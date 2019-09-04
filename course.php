@@ -50,17 +50,7 @@ if ($uid) {
     <!-- Navbar End -->
 
     <div class="container">
-        <div class="row mt-3 mb-4">
-            <div class="col-md-5" style="border: 2px solid black;">
-                <h1 class="text-center">
-                    <?php 
-                        echo getFirstWord($cname);
-                    ?>
-                </h1>
-            </div>
-            <div class="col-md-7">
-            </div>
-        </div>
+        <h1 class="my-4">Course Name : <?php echo getFirstWord($cname); ?> </h1>
 
         <h3 class="my-4">Course Activity</h3>
 

@@ -67,20 +67,14 @@ if (isset($_GET['courseid'])) {
             <div class="col-md-3">
                 <div class="card">
                     <div class="card-body">
-                        <div class="h5">@LeeCross</div>
-                        <div class="h7 text-muted">Fullname : Miracles Lee Cross</div>
-                        <div class="h7">Developer of web applications, JavaScript, PHP, Java, Python, Ruby, Java, Node.js,
-                            etc.
-                        </div>
+                        <div class="h5"><?php echo getFacultyFullname($userId); ?></div>
+                        <div class="h7">Course Name : <?php echo getCourseName($courseid); ?></div>
+                        <div class="h7 text-muted">Course Code : <?php echo getCourseCode($courseid); ?></div>
                     </div>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item">
-                            <div class="h6 text-muted">Total Course</div>
-                            <div class="h5">5.2342</div>
-                        </li>
-                        <li class="list-group-item">
                             <div class="h6 text-muted">Course Follower</div>
-                            <div class="h5">6758</div>
+                            <div class="h5"><?php echo getCourseFollower($courseid); ?></div>
                         </li>
                     </ul>
                 </div>
@@ -174,7 +168,7 @@ if (isset($_GET['courseid'])) {
                 <div class="card gedf-card">
                     <div class="card-body">
                         <h5 class="card-title">Registration Code</h5>
-                        <p class="card-text"><?php echo getCourseCode($courseid); ?></p>
+                        <p class="card-text"><?php echo getCourseRegCode($courseid); ?></p>
                     </div>
                 </div>
                 <!-- <div class="card gedf-card">

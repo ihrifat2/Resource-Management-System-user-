@@ -75,7 +75,6 @@ if ($userRoll == 1) {
                             </span>
                         </div>
                         <div class="card-desc">
-                            <p>Assignment 1</p>
                             <a href="<?php echo $link; ?>" class="btn-card">Read</a>
                         </div>
                     </div>
@@ -90,12 +89,10 @@ if ($userRoll == 1) {
                             <img src="https://placeimg.com/380/230/nature" alt="">
                             <span>
                                 <h4><?php echo $courseRow['course_title']; ?></h4>
-                                <p><?php echo $courseRow['course_title']; ?></p>
-                                <p>35 Students</p>
+                                <p><?php echo $courseRow['course_code']; ?></p>
                             </span>
                         </div>
                         <div class="card-desc">
-                            <p>Assignment 1</p>
                             <a href="<?php echo $link; ?>" class="btn-card">Read</a>
                         </div>
                     </div>
@@ -105,33 +102,6 @@ if ($userRoll == 1) {
             }
             ?>
         </div>
-        <!-- /.row -->
-
-        <!-- Pagination -->
-        <!-- <ul class="pagination justify-content-center">
-            <li class="page-item">
-                <a class="page-link" href="#" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                    <span class="sr-only">Previous</span>
-                </a>
-            </li>
-            <li class="page-item">
-                <a class="page-link" href="#">1</a>
-            </li>
-            <li class="page-item">
-                <a class="page-link" href="#">2</a>
-            </li>
-            <li class="page-item">
-                <a class="page-link" href="#">3</a>
-            </li>
-            <li class="page-item">
-                <a class="page-link" href="#" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                    <span class="sr-only">Next</span>
-                </a>
-            </li>
-        </ul> -->
-
     </div>
 </body>
 </html>

@@ -37,11 +37,11 @@ function validate_input($data) {
                         <h5 class="card-title text-center">Sign In</h5>
                         <form class="form-signin" method="post" action="">
                             <div class="form-label-group">
-                                <input type="email" class="form-control" name="login_email" placeholder="Email address" autofocus>
+                                <input type="email" class="form-control" name="login_email" autofocus>
                                 <label for="inputEmail">Email address</label>
                             </div>
                             <div class="form-label-group">
-                                <input type="password" class="form-control" name="login_passwd" placeholder="Password">
+                                <input type="password" class="form-control" name="login_passwd">
                                 <label for="inputPassword">Password</label>
                             </div>
                             <button class="btn btn-lg btn-primary btn-block text-uppercase" name="login_btn" type="submit">Sign in</button>
@@ -78,20 +78,29 @@ if (isset($_POST['login_btn'])) {
             $userinfo_id    = $rows['userinfo_id'];
             $userinfo_uname = $rows['userinfo_uname'];
             $userinfo_role  = $rows['userinfo_role'];
-            //check password in matched
-            $check          = password_verify($login_passwd, $store_password);
-            if ($check) {
-                //store info to the session for authentication
-                $_SESSION['user_id']    = $userinfo_id;
-                $_SESSION['user_name']  = $userinfo_uname;
-                $_SESSION['user_role']  = $userinfo_role;
-                echo "<script>javascript:document.location='index.php'</script>";
-            } else {
+            $status         = $rows['userinfo_status'];
+            if ($status == 1) {
                 $notificationItemArray = array(
                     'title'=>'Error!',
-                    'text'=>'Email Or Password Is Invalid.',
+                    'text'=>'Your Account Is Blocked.',
                     'type'=>'error',
                 );
+            } else {
+                //check password in matched
+                $check          = password_verify($login_passwd, $store_password);
+                if ($check) {
+                    //store info to the session for authentication
+                    $_SESSION['user_id']    = $userinfo_id;
+                    $_SESSION['user_name']  = $userinfo_uname;
+                    $_SESSION['user_role']  = $userinfo_role;
+                    echo "<script>javascript:document.location='index.php'</script>";
+                } else {
+                    $notificationItemArray = array(
+                        'title'=>'Error!',
+                        'text'=>'Email Or Password Is Invalid.',
+                        'type'=>'error',
+                    );
+                }
             }
         } else {
             $notificationItemArray = array(

@@ -1,9 +1,14 @@
 <?php
+//Database Connection
 require 'dbconnect.php';
+//Start Session
 session_start();
-if(isset($_SESSION["sdt_id"]) && isset($_SESSION["sdt_name"]) && isset($_SESSION["sdt_role"])){
+//Check user Authentication
+if(isset($_SESSION["user_id"]) && isset($_SESSION["user_name"]) && isset($_SESSION["user_role"])){
     header("Location: index.php");
 }
+require 'sqlhelper.php';
+//validate user input
 function validate_input($data) {
     $data = trim($data);
     $data = stripslashes($data);
@@ -36,27 +41,27 @@ function validate_input($data) {
                         <h5 class="card-title text-center">Register</h5>
                         <form class="form-signin" method="post" action="">
                             <div class="form-label-group">
-                                <input type="text" class="form-control" name="reg_fullname" placeholder="Full Name" autofocus>
+                                <input type="text" class="form-control" name="reg_fullname" autofocus>
                                 <label for="inputUserame">Full Name</label>
                             </div>
                             <div class="form-label-group">
-                                <input type="text" class="form-control" name="reg_uname" placeholder="Username">
+                                <input type="text" class="form-control" name="reg_uname">
                                 <label for="inputUserame">Username</label>
                             </div>
                             <div class="form-label-group">
-                                <input type="text" class="form-control" name="reg_sdtId" placeholder="Student ID">
+                                <input type="text" class="form-control" name="reg_sdtId">
                                 <label for="inputStudentID">Student ID</label>
                             </div>
                             <div class="form-label-group">
-                                <input type="email" class="form-control" name="reg_email" placeholder="Email address">
+                                <input type="email" class="form-control" name="reg_email">
                                 <label for="inputEmail">Email address</label>
                             </div>
                             <div class="form-label-group">
-                                <input type="password" class="form-control" name="reg_newPasswd" placeholder="Password">
+                                <input type="password" class="form-control" name="reg_newPasswd">
                                 <label for="inputPassword">Password</label>
                             </div>
                             <div class="form-label-group">
-                                <input type="password" class="form-control" name="reg_conPasswd" placeholder="Password">
+                                <input type="password" class="form-control" name="reg_conPasswd">
                                 <label for="inputConfirmPassword">Confirm password</label>
                             </div>
                             <button class="btn btn-lg btn-primary btn-block text-uppercase" type="submit" name="reg_btn">Register</button>
@@ -71,7 +76,9 @@ function validate_input($data) {
 </html>
 <?php
 if (isset($_POST['reg_btn'])) {
+    //Taking input
     $reg_fullname   = validate_input($_POST['reg_fullname']);
+    $reg_fullname   = ucwords($reg_fullname);
     $reg_uname      = validate_input($_POST['reg_uname']);
     $reg_sdtId      = validate_input($_POST['reg_sdtId']);
     $reg_email      = validate_input($_POST['reg_email']);
@@ -79,6 +86,7 @@ if (isset($_POST['reg_btn'])) {
     $reg_conPasswd  = validate_input($_POST['reg_conPasswd']);
     $today = date("Y-m-d");
 
+    //Check any of the input field is empty
     if (empty($reg_fullname) || empty($reg_uname) || empty($reg_sdtId) || empty($reg_email) || empty($reg_newPasswd) || empty($reg_conPasswd)) {
         $notificationItemArray = array(
             'title'=>'Error!',
@@ -86,28 +94,40 @@ if (isset($_POST['reg_btn'])) {
             'type'=>'error',
         );
     } else {
+        //filter email
         if (filter_var($reg_email, FILTER_VALIDATE_EMAIL)) {
-            if ($reg_newPasswd == $reg_conPasswd) {
-                $passwd     = password_hash($reg_newPasswd, PASSWORD_BCRYPT);
-                $sqlQuery   = "INSERT INTO `tbl_sdtinfo`(`sdtinfo_id`, `sdtinfo_name`, `sdtinfo_uname`, `sdtinfo_rollid`, `sdtinfo_email`, `sdtinfo_passwd`, `sdtinfo_create`) VALUES (NULL,'$reg_fullname','$reg_uname','$reg_sdtId','$reg_email','$passwd','$today')";
-                $result = mysqli_query($dbconnect, $sqlQuery);
-                if ($result) {
-                    $notificationItemArray = array(
-                        'title'=>'Success!',
-                        'text'=>'Registration Successfull.',
-                        'type'=>'success',
-                    );
+            if (checkEmail($reg_email) == 0) {
+                //check both password is match
+                if ($reg_newPasswd == $reg_conPasswd) {
+                    //encrypt password
+                    $passwd     = password_hash($reg_newPasswd, PASSWORD_BCRYPT);
+                    //storing info to DB
+                    $sqlQuery   = "INSERT INTO `tbl_userinfo`(`userinfo_id`, `userinfo_name`, `userinfo_uname`, `userinfo_rollid`, `userinfo_email`, `userinfo_passwd`, `userinfo_create`) VALUES (NULL,'$reg_fullname','$reg_uname','$reg_sdtId','$reg_email','$passwd','$today')";
+                    $result = mysqli_query($dbconnect, $sqlQuery);
+                    if ($result) {
+                        $notificationItemArray = array(
+                            'title'=>'Success!',
+                            'text'=>'Registration Successfull.',
+                            'type'=>'success',
+                        );
+                    } else {
+                        $notificationItemArray = array(
+                            'title'=>'Error!',
+                            'text'=>'An Unexpected Error Occured.',
+                            'type'=>'error',
+                        );
+                    }
                 } else {
                     $notificationItemArray = array(
                         'title'=>'Error!',
-                        'text'=>'An Unexpected Error Occured.',
+                        'text'=>'Password Not Matched.',
                         'type'=>'error',
                     );
                 }
             } else {
                 $notificationItemArray = array(
                     'title'=>'Error!',
-                    'text'=>'Password Not Matched.',
+                    'text'=>'Email Already Registered.',
                     'type'=>'error',
                 );
             }
@@ -119,6 +139,7 @@ if (isset($_POST['reg_btn'])) {
             );
         }
     }
+    //storing notification to session
     if(!empty($_SESSION["notification_item"])) {
         if(in_array($RMSNotification["notification"],array_keys($_SESSION["notification_item"]))) {
             foreach($_SESSION["notification_item"] as $k => $v) {
@@ -136,5 +157,6 @@ if (isset($_POST['reg_btn'])) {
         $_SESSION["notification_item"] = $notificationItemArray;
     }
 }
+//show notification from session
 include 'inc/notification.php';
 ?>
